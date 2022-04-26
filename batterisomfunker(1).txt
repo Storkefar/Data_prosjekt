@@ -1,0 +1,144 @@
+#include <Arduino.h>
+#include <Zumo32U4.h>
+#include <wire.h>
+
+Zumo32U4LCD display;
+Zumo32U4Encoders encoders;
+Zumo32U4Motors motors;
+
+//variabler som har med alle funksjonene å gjøre
+int timeInterval = 100; 
+//slutt
+
+// start Deklarerer varibaler knyttet til speedometer løkken
+unsigned long firstTimeSpeedLeft = 0;  //venstre
+int firstCountLeft = 0;
+float speedLeft = 0;  
+
+unsigned long firstTimeSpeedRight = 0; //høyre
+int firstCountRight = 0;
+float speedRight = 0;
+//slutt
+
+//deklarerer variabler knyttet til batteri løkken
+unsigned long totalBatteryTimeLeft = 3600*1000;
+unsigned long totalBatteryPercentage = 100;
+
+unsigned long firstTimeBatteryRight = 0;
+unsigned long firstTimeBatteryLeft = 0;
+
+
+//slutt
+
+//deklarer varibaler knyttt til print løkken
+unsigned long firstPrintTimeRight = 0;
+unsigned long firstPrintTimeLeft = 0;
+//slutt
+
+//speedometer funksjonen
+float speedValue(char speedSide){
+  unsigned long lastTimeSpeed = millis(); //noterer nåtid
+
+  if (speedSide == 'r'){ //sjekker om det er høyre side hvor fart skal måles
+      if (lastTimeSpeed - firstTimeSpeedRight >= timeInterval){ 
+            int lastCountRight = encoders.getCountsRight();
+            int totalCountRight = lastCountRight - firstCountRight;
+            float revsPerSecRight = (totalCountRight/909.7)/0.1;
+            speedRight = revsPerSecRight*11;   
+
+            firstCountRight = encoders.getCountsRight();
+            firstTimeSpeedRight = millis();
+
+            return speedRight;
+        }
+        else{
+            return speedRight;
+        }
+    }
+
+  else if (speedSide == 'l'){ //sjekker om det er venstre side
+        if (lastTimeSpeed - firstTimeSpeedLeft >= timeInterval){
+            int lastCountLeft = encoders.getCountsLeft();
+            int totalCountLeft = lastCountLeft - firstCountLeft;
+            float revsPerSecLeft = (totalCountLeft/909.7)/0.1;
+            speedLeft = revsPerSecLeft*11;
+
+            firstCountLeft = encoders.getCountsLeft();
+            firstTimeSpeedLeft = millis();
+
+            return speedLeft;
+        }
+        else{
+            return speedLeft;
+        }
+    }
+}
+//slutt
+
+
+//batteri funksjonen
+float battery(char batterySide ){   
+    unsigned long lastTimeBattery = millis(); //noterer nåtid
+
+    if (batterySide == 'r'){ //sjekker om batteriet skal ta info fra høyre side
+        if (lastTimeBattery - firstTimeBatteryRight >= timeInterval){
+            unsigned long batteryConsumptionRight = abs((2*speedValue('r')) + 10);
+            totalBatteryTimeLeft -= (batteryConsumptionRight/1200)*timeInterval;
+            totalBatteryPercentage = (totalBatteryTimeLeft / (3600*1000))*100;
+
+            firstTimeBatteryRight = millis();
+
+            return totalBatteryPercentage;
+        }
+        else {
+            return totalBatteryPercentage;
+        }
+    }
+    if (batterySide == 'l'){ //sjekker om batteriet skal ta info fra venstre side
+            if (lastTimeBattery - firstTimeBatteryLeft >= timeInterval){
+                unsigned long batteryConsumptionLeft = abs((2*speedValue('l')) + 10);
+                totalBatteryTimeLeft -= (batteryConsumptionLeft/1200)*timeInterval;
+                totalBatteryPercentage = (totalBatteryTimeLeft / (3600*1000))*100;
+
+                firstTimeBatteryLeft = millis();
+
+                return totalBatteryPercentage;
+            }
+            else {
+                return totalBatteryPercentage;
+            }
+    }
+}
+//slutt
+
+//display funksjonen
+void displayValues(char displaySide){
+    unsigned long lastPrintTime = millis(); //noterer nåtid
+
+    if(displaySide == 'r'){ //sjekker om vi skal ta info fra høyre side
+        if (lastPrintTime - firstPrintTimeRight >= timeInterval){
+        display.clear();
+        display.print(battery('r')); //infoen fra høyre side vi skal printe
+        firstPrintTimeRight = millis();
+        }
+    }
+
+    else if (displaySide == 'l'){ //sjekker om vi skal ta info fra venstre side
+        if (lastPrintTime - firstPrintTimeLeft >= timeInterval){
+        display.clear();
+        display.print(battery('l')); //infoen fra venstre side vi skal printe
+        firstPrintTimeLeft = millis();
+        }
+    }
+}
+//slutt
+
+
+void setup() {
+ }
+
+void loop() {
+    motors.setSpeeds(400,400);
+    displayValues('l');
+
+ }
