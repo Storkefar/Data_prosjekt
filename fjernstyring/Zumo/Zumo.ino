@@ -57,19 +57,21 @@ void hardTurn(bool Direction) {
 
 void loop() {
   while(Serial1.available()) {
-    Serial1.readBytes(data, 1); //Read the serial data from the ESP32 and store in the data variable
-    delay(1);
-    char received = (char)Serial1.read(); //Reads the serial data as a char to use with switch case
+    //Serial1.readBytes(data, 1); //Read the serial data from the ESP32 and store in the data variable
+    //delay(1);
+    char received = Serial1.read(); //Reads the serial data as a char to use with switch case
     Serial.println(received); //Print data to Serial Monitor 
 
     switch(received) {
       case 'w':
-        motors(225);
+        motors(100);
         drive(true);
         break;
 
       case 'a':
-        hardTurn(false);
+        //hardtrun(false);
+        //motors(50,100);
+        softTurn(false);
         break;
 
       case 's':
@@ -78,7 +80,9 @@ void loop() {
         break; 
 
       case 'd':
-        hardTurn(true);
+        //hardTurn(true);
+        //motors(100,50);
+        softTurn(true);
         break;
 
       case 'x':
