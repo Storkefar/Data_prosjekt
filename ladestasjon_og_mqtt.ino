@@ -2,21 +2,17 @@
 #include <PubSubClient.h>
 #include <Wire.h>
 #include <Arduino.h>
-#include <Zumo32U4.h>
 #include <SPI.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 
 Adafruit_SSD1306 display(-1);
-int bankKonto = 100;
+uint8_t bankKonto;
+const int knappA = 22;
+const int knappB = 23;
+const int knappC = 24;
 uint8_t bilID = 25;
-int prisListe[] = {1, 2, 3}; // read from server
-Zumo32U4LCD display;
-Zumo32U4Encoders encoders;
-Zumo32U4Motors motors;
-Zumo32U4ButtonA buttonA;
-Zumo32U4ButtonB buttonB;
-Zumo32U4ButtonC buttonC;
+uint8_t prisListe[] = {1, 2, 3}; // read from server
 uint8_t battery_level = 100;
 const char* ssid = "Trym sin iPhone";
 const char* password = "12345678";
@@ -35,6 +31,10 @@ void setup() {
   
   // Clear the buffer.
   display.clearDisplay();
+  //declare buttons
+  pinMode(knappA,INPUT);
+  pinMode(knappB,INPUT);
+  pinMode(knappC,INPUT);
 }
 
 void setup_wifi() {
@@ -76,7 +76,10 @@ void callback(char* topic, byte* message, unsigned int length) {
     // bankKonto needs to be read from server
   }
   Serial.println();
-  if (String(topic) == "esp32/output") {
+  if (String(topic) == "bankUt") {
+      bankKonto =
+    }
+  if (String(topic) == "ladestasjon") {
     Serial.print("Changing output to ");
   }
 }
@@ -90,6 +93,7 @@ void reconnect() {
       Serial.println("connected");
       // Subscribe
       client.subscribe("ladestasjon");
+      client.subscribe("bankUt");
     } else {
       Serial.print("failed, rc=");
       Serial.print(client.state());
@@ -103,6 +107,7 @@ void loop() {
   if (!client.connected()) {
     reconnect();
   }
+  client.publish("bankIn", "fetch bank");
   /*
   client.loop();
   uint8_t tall = 123;
@@ -111,19 +116,23 @@ void loop() {
   client.endPublish();
   delay(3000);
   */
-  TypeLadning();
+  BestilleLadning();
 }
 
 void BestilleLadning(){
+  int read_knappA = digitalRead(knappA);
+  int read_knappB = digitalRead(knappB);
+  int read_knappC = digitalRead(knappC);
+  
   int typeLadning = 0;
   callback();
-  if(buttonA.isPressed()){
+  if(read_knappA == LOW){
     typeLadning = 1;
   }
-  else if(buttonB.isPressed()){
+  else if(read_knappB == LOW){
     typeLadning = 2;
   }
-  else if(buttonC.isPressed()){
+  else if(read_knappC == LOW){
       typeLadning = 3;
   }
   raporter(typeLadning);
@@ -137,7 +146,7 @@ void BestilleLadning(){
             if(bankKonto < 0){
               break;
             } 
-            SkyserverOLED(i);     
+            statusDisplay(i);     
             delay(1000);
           }
         }//end if
@@ -152,7 +161,7 @@ void BestilleLadning(){
             break;
           }
           delay(1000);  
-          SkyserverOLED(i);  
+          statusDisplay(i);  
         }
         break;
       }
@@ -172,14 +181,14 @@ void BestilleLadning(){
             break;
           }
           delay(1000);
-          SkyserverOLED(i);            
+          statusDisplay(i);            
         }
         break;
       }
   }
 }
 
-void SkyserverOLED(uint8_t i){
+void statusDisplay(uint8_t i){
   //Vise på skyserveren
   client.beginPublish("ladestasjon", 1, false);
   client.write(i);
