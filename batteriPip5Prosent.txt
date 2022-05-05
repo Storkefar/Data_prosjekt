@@ -1,0 +1,14 @@
+float warningFirstTime = 0;
+
+if ((batteryPercentage <= 5) && (batteryPercentage > 0)){
+  batteryWarningTime += 0.1; //NB 0.1 er timeInterval/1000
+  if (batteryWarningTime >= 5){
+      motors.setSpeeds(0,0); //stopper bilen
+      buzzer.playFrequency(800, 250, 15); //spiller to korte bip
+      while(buzzer.isPlaying()){ };
+      delay(250);
+      buzzer.playFrequency(800, 250, 15);
+      while(buzzer.isPlaying()){ };
+      batteryWarningTime = 0;
+  }
+} 
