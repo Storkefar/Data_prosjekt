@@ -6,10 +6,10 @@
 const byte ROWS = 4; //four rows
 const byte COLS = 4; //four columns
 char keys[ROWS][COLS] = {
-{'1','2','3','A'},
-{'4','5','6','B'},
-{'7','8','9','C'},
-{'*','0','#','D'}
+{'q','w','e'},
+{'a','s','d'},
+{'7','8','9'},
+{'*','0','#'}
 };
 byte rowPins[ROWS] = {32,33,25,26};//connect to the row pinouts of the keypad
 byte colPins[COLS] = {27,14,12,13}; //connect to the column pinouts of the keypad
@@ -49,30 +49,6 @@ void setup(){
   //client.setCallback(callback);
 
 }
-
-/*
-void callback(char* topic, byte* message, unsigned int length) {
-  Serial.print("Message arrived on topic: ");
-  Serial.print(topic);
-  Serial.print(". Message: ");
-  String ledState;
-  
-  for (int i = 0; i < length; i++) {
-    Serial.print((char)message[i]);
-    ledState += (char)message[i];
-  }
-  Serial.println();
-
-  // Feel free to add more if statements to control more GPIOs with MQTT
-
-  // If a message is received on the topic esp32/output, you check if the message is either "on" or "off". 
-  // Changes the output state according to the message
-  if (String(topic) == "ledControl/ledOut") {
-    //insert messages her
-  }
-}
-*/
-
 void reconnect() {
   // Loop until we're reconnected
   while (!client.connected()) {
