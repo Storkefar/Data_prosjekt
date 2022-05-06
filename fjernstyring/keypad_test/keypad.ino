@@ -8,8 +8,8 @@ const byte COLS = 4; //four columns
 char keys[ROWS][COLS] = {
 {'q','w','e'},
 {'a','s','d'},
-{'7','8','9'},
-{'*','0','#'}
+{' ','c','l'},
+{'*',' ','#'}
 };
 byte rowPins[ROWS] = {32,33,25,26};//connect to the row pinouts of the keypad
 byte colPins[COLS] = {27,14,12,13}; //connect to the column pinouts of the keypad
